@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="HitsTune_first_draft.LoginPage"
+             Title="כניסה למשחק"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#1E1B4B">
+
+    <ScrollView VerticalOptions="Center">
+        <VerticalStackLayout Padding="30" Spacing="20" HorizontalOptions="Center" MaximumWidthRequest="400">
+
+            <Label Text="🎵 HitsTune"
+                   FontSize="36"
+                   FontAttributes="Bold"
+                   TextColor="#818CF8"
+                   HorizontalOptions="Center" />
+
+            <Label x:Name="TitleLabel"
+                   Text="התחברות לחשבון"
+                   FontSize="20"
+                   TextColor="White"
+                   HorizontalOptions="Center" />
+
+            <Border x:Name="PlayerNameBorder"
+                    Stroke="#4338CA"
+                    StrokeThickness="1"
+                    BackgroundColor="#312E81"
+                    Padding="10,0"
+                    IsVisible="False">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <Entry x:Name="PlayerNameEntry"
+                       Placeholder="שם שחקן (Nickname)"
+                       PlaceholderColor="#A5B4FC"
+                       TextColor="White" />
+            </Border>
+
+            <Border Stroke="#4338CA"
+                    StrokeThickness="1"
+                    BackgroundColor="#312E81"
+                    Padding="10,0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <Entry x:Name="EmailEntry"
+                       Placeholder="דואר אלקטרוני"
+                       Keyboard="Email"
+                       PlaceholderColor="#A5B4FC"
+                       TextColor="White" />
+            </Border>
+
+            <Border Stroke="#4338CA"
+                    StrokeThickness="1"
+                    BackgroundColor="#312E81"
+                    Padding="10,0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <Entry x:Name="PasswordEntry"
+                       Placeholder="סיסמה"
+                       IsPassword="True"
+                       PlaceholderColor="#A5B4FC"
+                       TextColor="White" />
+            </Border>
+
+            <Label x:Name="StatusLabel"
+                   TextColor="#F87171"
+                   FontSize="14"
+                   HorizontalOptions="Center"
+                   IsVisible="False" />
+
+            <Button x:Name="SubmitButton"
+                    Text="התחבר"
+                    BackgroundColor="#6366F1"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    CornerRadius="10"
+                    HeightRequest="50"
+                    Clicked="OnSubmitClicked" />
+
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="5">
+                <Label x:Name="ToggleModeText"
+                       Text="אין לך חשבון?"
+                       TextColor="#A5B4FC"
+                       VerticalOptions="Center" />
+                <Button x:Name="ToggleButton"
+                        Text="הירשם עכשיו"
+                        BackgroundColor="Transparent"
+                        TextColor="#818CF8"
+                        FontAttributes="Bold"
+                        Clicked="OnToggleModeClicked" />
+            </HorizontalStackLayout>
+
+            <ActivityIndicator x:Name="LoadingIndicator"
+                               IsRunning="False"
+                               IsVisible="False"
+                               Color="#818CF8" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

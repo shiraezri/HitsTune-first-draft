@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="HitsTune_first_draft.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:HitsTune_first_draft"
+    xmlns:views="clr-namespace:HitsTune_first_draft.Views"
+    Title="HitsTune_first_draft"
+    Shell.FlyoutBehavior="Disabled">
+
+    <!-- עמוד הפתיחה הראשוני - מסך התחברות והרשמה -->
+    <ShellContent
+        Title="Login"
+        ContentTemplate="{DataTemplate local:LoginPage}"
+        Route="LoginPage" />
+
+    <!-- העמוד הראשי של המשחק -->
+    <ShellContent
+        Title="Main"
+        ContentTemplate="{DataTemplate local:MainPage}"
+        Route="MainPage" />
+
+    <!-- עמוד המשחק -->
+    <ShellContent
+        Title="Game"
+        ContentTemplate="{DataTemplate views:GamePage}"
+        Route="GamePage" />
+
+</Shell>
