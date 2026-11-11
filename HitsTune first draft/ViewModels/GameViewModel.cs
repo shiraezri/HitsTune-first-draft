@@ -1,24 +1,44 @@
 ﻿using System;
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using HitsTune_first_draft.Models;
 using HitsTune_first_draft.Services;
 
 namespace HitsTune_first_draft.ViewModels
 {
+    [QueryProperty(nameof(RoomIdParam), "roomId")]
+    [QueryProperty(nameof(PlayerIdParam), "playerId")]
     public class GameViewModel : INotifyPropertyChanged
     {
         private readonly FirebaseService _firebaseService;
         private readonly SongService _songService;
         private GameRoom _currentRoom;
-        private string _inputRoomId;
         private string _guessedYear;
         private string _feedbackMessage;
         private string _myPlayerId;
         private IDispatcherTimer _timer;
+        private IDisposable _roomSubscription;
+
+        public string RoomIdParam
+        {
+            set
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    LoadAndListenToRoom(value);
+                }
+            }
+        }
+
+        public string PlayerIdParam
+        {
+            set => MyPlayerId = value;
+        }
 
         public GameRoom CurrentRoom
         {
@@ -32,34 +52,16 @@ namespace HitsTune_first_draft.ViewModels
             }
         }
 
-        public string InputRoomId
-        {
-            get => _inputRoomId;
-            set
-            {
-                _inputRoomId = value;
-                OnPropertyChanged();
-            }
-        }
-
         public string GuessedYear
         {
             get => _guessedYear;
-            set
-            {
-                _guessedYear = value;
-                OnPropertyChanged();
-            }
+            set { _guessedYear = value; OnPropertyChanged(); }
         }
 
         public string FeedbackMessage
         {
             get => _feedbackMessage;
-            set
-            {
-                _feedbackMessage = value;
-                OnPropertyChanged();
-            }
+            set { _feedbackMessage = value; OnPropertyChanged(); }
         }
 
         public string MyPlayerId
@@ -87,65 +89,22 @@ namespace HitsTune_first_draft.ViewModels
             }
         }
 
-        public ICommand CreateRoomCommand { get; }
-        public ICommand JoinRoomCommand { get; }
         public ICommand SubmitGuessCommand { get; }
 
         public GameViewModel()
         {
             _firebaseService = new FirebaseService();
             _songService = new SongService();
-
-            CreateRoomCommand = new Command(async () => await CreateNewRoomAsync());
-            JoinRoomCommand = new Command(async () => await JoinRoomAsync());
             SubmitGuessCommand = new Command(async () => await SubmitGuessAsync());
         }
 
-        private async Task CreateNewRoomAsync()
+        private async void LoadAndListenToRoom(string roomId)
         {
-            MyPlayerId = "P1";
-            var hostPlayer = new Player { Id = MyPlayerId, Name = "Player 1", Score = 0 };
-
-            // הוספת שיר ראשון רנדומלי לציר הזמן של שחקן 1
-            hostPlayer.Timeline.Add(_songService.GetRandomSong());
-
-            var firstSong = _songService.GetRandomSong();
-
-            var newRoom = new GameRoom
+            CurrentRoom = await _firebaseService.GetRoomAsync(roomId);
+            StartListeningToRoomUpdates(roomId);
+            if (MyPlayerId == "P1")
             {
-                RoomId = new Random().Next(1000, 9999).ToString(),
-                Status = "Waiting",
-                Player1 = hostPlayer,
-                CurrentTurnPlayerId = hostPlayer.Id,
-                CurrentSong = firstSong,
-                TimerSeconds = 30
-            };
-
-            await _firebaseService.CreateRoomAsync(newRoom);
-            CurrentRoom = newRoom;
-            StartListeningToRoomUpdates(newRoom.RoomId);
-            StartTimer();
-        }
-
-        private async Task JoinRoomAsync()
-        {
-            if (string.IsNullOrWhiteSpace(InputRoomId)) return;
-
-            var existingRoom = await _firebaseService.GetRoomAsync(InputRoomId);
-            if (existingRoom != null)
-            {
-                MyPlayerId = "P2";
-                var guestPlayer = new Player { Id = MyPlayerId, Name = "Player 2", Score = 0 };
-
-                // הוספת שיר ראשון רנדומלי לציר הזמן של שחקן 2
-                guestPlayer.Timeline.Add(_songService.GetRandomSong());
-
-                existingRoom.Player2 = guestPlayer;
-                existingRoom.Status = "Playing";
-
-                await _firebaseService.UpdateRoomAsync(existingRoom);
-                CurrentRoom = existingRoom;
-                StartListeningToRoomUpdates(existingRoom.RoomId);
+                StartTimer();
             }
         }
 
@@ -160,11 +119,9 @@ namespace HitsTune_first_draft.ViewModels
                 if (yearGuess == CurrentRoom.CurrentSong.ReleaseYear)
                 {
                     FeedbackMessage = "תשובה נכונה! השיר התווסף לציר הזמן 🎉";
-
                     if (currentPlayer != null)
                     {
                         currentPlayer.Score += 100;
-                        // הוספת השיר לציר הזמן של השחקן
                         currentPlayer.Timeline.Add(CurrentRoom.CurrentSong);
                     }
                 }
@@ -178,7 +135,6 @@ namespace HitsTune_first_draft.ViewModels
                 CurrentRoom.TimerSeconds = 30;
                 GuessedYear = string.Empty;
 
-                // עדכון המסך המקומי ושל השרת
                 OnPropertyChanged(nameof(CurrentRoom));
                 await _firebaseService.UpdateRoomAsync(CurrentRoom);
             }
@@ -186,10 +142,7 @@ namespace HitsTune_first_draft.ViewModels
 
         private void SwitchTurn()
         {
-            if (CurrentRoom == null) return;
-
-            // התור יעבור ל-P2 רק אם שחקן 2 כבר הצטרף לחדר
-            if (CurrentRoom.Player2 != null)
+            if (CurrentRoom?.Player2 != null)
             {
                 CurrentRoom.CurrentTurnPlayerId = CurrentRoom.CurrentTurnPlayerId == "P1" ? "P2" : "P1";
             }
@@ -205,7 +158,11 @@ namespace HitsTune_first_draft.ViewModels
                 if (MyPlayerId == "P1" && CurrentRoom != null && CurrentRoom.TimerSeconds > 0)
                 {
                     CurrentRoom.TimerSeconds--;
-                    OnPropertyChanged(nameof(CurrentRoom));
+
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        OnPropertyChanged(nameof(CurrentRoom));
+                    });
 
                     if (CurrentRoom.TimerSeconds == 0)
                     {
@@ -223,11 +180,15 @@ namespace HitsTune_first_draft.ViewModels
 
         private void StartListeningToRoomUpdates(string roomId)
         {
-            _firebaseService.ListenToRoom(roomId).Subscribe(updatedRoom =>
+            _roomSubscription?.Dispose();
+            _roomSubscription = _firebaseService.ListenToRoom(roomId).Subscribe(updatedRoom =>
             {
                 if (updatedRoom?.Object != null)
                 {
-                    CurrentRoom = updatedRoom.Object;
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        CurrentRoom = updatedRoom.Object;
+                    });
                 }
             });
         }

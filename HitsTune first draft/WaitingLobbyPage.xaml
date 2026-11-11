@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="HitsTune_first_draft.WaitingLobbyPage"
+             Title="חדר המתנה"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#0F172A">
+
+    <ScrollView VerticalOptions="FillAndExpand">
+        <VerticalStackLayout Padding="25" Spacing="25" HorizontalOptions="Center" MaximumWidthRequest="420">
+
+            <!-- כותרת ראשית -->
+            <Label Text="חדר המתנה למשחק 🎮" 
+                   FontSize="28" 
+                   FontAttributes="Bold" 
+                   TextColor="White" 
+                   HorizontalOptions="Center" 
+                   Margin="0,20,0,0" />
+
+            <!-- כרטיסיית קוד החדר -->
+            <Border BackgroundColor="#1E293B" Stroke="#6366F1" StrokeThickness="2" Padding="20">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="18" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="10" HorizontalOptions="Center">
+                    <Label Text="קוד החדר שלך:" FontSize="14" TextColor="#94A3B8" HorizontalOptions="Center" />
+
+                    <Label x:Name="RoomCodeLabel" 
+                           Text="----" 
+                           FontSize="40" 
+                           FontAttributes="Bold" 
+                           TextColor="#818CF8" 
+                           CharacterSpacing="6" 
+                           HorizontalOptions="Center" />
+
+                    <Button Text="📋 העתק קוד חדר" 
+                            BackgroundColor="#312E81" 
+                            TextColor="#A5B4FC" 
+                            FontSize="13" 
+                            CornerRadius="8" 
+                            HeightRequest="38" 
+                            Clicked="OnCopyCodeClicked" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- רשימת השחקנים בחדר -->
+            <VerticalStackLayout Spacing="12">
+                <Grid ColumnDefinitions="*, Auto">
+                    <Label Grid.Column="0" Text="שחקנים בחדר:" FontSize="18" FontAttributes="Bold" TextColor="White" />
+                    <Label Grid.Column="1" x:Name="PlayerCountLabel" Text="1/8" FontSize="16" TextColor="#38BDF8" FontAttributes="Bold" />
+                </Grid>
+
+                <!-- רשימת השחקנים שהצטרפו -->
+                <CollectionView x:Name="PlayersCollectionView">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border BackgroundColor="#1E1B4B" Stroke="#312E81" StrokeThickness="1" Margin="0,4" Padding="12">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="12" />
+                                </Border.StrokeShape>
+                                <Grid ColumnDefinitions="Auto, *, Auto">
+                                    <Label Grid.Column="0" Text="👤" FontSize="20" VerticalOptions="Center" Margin="0,0,10,0" />
+                                    <Label Grid.Column="1" Text="{Binding Name}" FontSize="16" FontAttributes="Bold" TextColor="White" VerticalOptions="Center" />
+                                    <Label Grid.Column="2" Text="{Binding RoleText}" FontSize="12" TextColor="#FBBF24" VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+
+            <!-- כפתור להתחלת המשחק (פעיל רק למארח) -->
+            <Button x:Name="StartGameButton" 
+                    Text="🚀 התחל משחק!" 
+                    BackgroundColor="#22C55E" 
+                    TextColor="White" 
+                    FontSize="18" 
+                    FontAttributes="Bold" 
+                    CornerRadius="14" 
+                    HeightRequest="55" 
+                    Margin="0,15,0,0" 
+                    Clicked="OnStartGameClicked" />
+
+            <!-- כפתור יציאה מהחדר -->
+            <Button Text="עזוב חדר" 
+                    BackgroundColor="Transparent" 
+                    TextColor="#EF4444" 
+                    FontSize="14" 
+                    Clicked="OnLeaveRoomClicked" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
